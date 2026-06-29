@@ -1,9 +1,28 @@
 #!/bin/bash
-
 set -e
 
+if ! groups "$USER" | grep -qw docker; then
+    echo "[INFO] Current user is not in the docker group."
+    echo "[INFO] Adding user '$USER' to docker group..."
+
+    sudo usermod -aG docker "$USER"
+    newgrp docker
+    echo "Docker permission has been granted."
+fi
+
 CONTAINER_NAME="rtsp_container"
-IMAGE_NAME="rtsp:v2"
+IMAGE_NAME="$1"
+
+if [ -z "$IMAGE_NAME" ]; then
+    echo "Usage: $0 <image_name[:tag]>"
+    echo
+    echo "Example:"
+    echo "  $0 rtsp:v1"
+    echo "  This image is for Ubuntu:20.04"
+    echo "  $0 rtsp:v2"
+    echo "  This image is for Ubuntu:22.04"
+    exit 1
+fi
 
 # ==========================================================
 # Install xhost autostart (only once)
